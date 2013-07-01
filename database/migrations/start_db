@@ -1,0 +1,153 @@
+<?php
+/*
+$table->increments('id'); Incrementing ID to the table 
+$table->string('email'); VARCHAR equivalent column 
+$table->string('name', 100); VARCHAR equivalent with a length 
+$table->integer('votes'); INTEGER equivalent to the table 
+$table->float('amount'); FLOAT equivalent to the table 
+$table->decimal('amount', 5, 2); DECIMAL equivalent with a precision and scale 
+$table->boolean('confirmed'); BOOLEAN equivalent to the table 
+$table->date('created_at'); DATE equivalent to the table 
+$table->timestamp('added_on'); TIMESTAMP equivalent to the table 
+$table->timestamps(); Adds created_at and updated_at columns 
+$table->text('description'); TEXT equivalent to the table 
+$table->blob('data'); BLOB equivalent to the table 
+->nullable() Designate that the column allows NULL values 
+->default($value) Declare a default value for a column 
+->unsigned() Set INTEGER to UNSIGNED 
+*/
+
+/*
+Control/Assault: Disruptor
+Control/Support: Director
+Control/Ranged: Oppressor 
+
+Ranged/Manipulation: Striker
+Ranged/Support: Projector
+Ranged/Defense: Enforcer 
+
+Pets/Suport: Battlemaster
+Pets/Assault: Commander
+Pets/Manipulation: Overseer 
+
+Melee/Defense: Brawler
+Melee/Manipulation: Marauder
+Melee/Support: Warrior 
+
+Support/Ranged: Guardian
+Support/Manipulation: Protector
+Support/Assault: Vindicator 
+
+Defense/Melee: Stalwart
+Defense/Manipulation: Centurion
+Defense/Assault: Crusader 
+
+*/
+
+<?php
+Schema::create('archetype', function($table)
+{
+    $table->increments('id');
+    $table->string('name', 16);
+    $table->string('role', 32);
+    $table->string('icon_path', 320);
+});
+
+DB::table('archetype')->insert(array(
+  'name' => 'Disruptor',
+        'role' => 'Control/Assault'
+));
+
+
+<?php
+Schema::create('zone', function($table)
+{
+    $table->increments('id');
+    $table->string('name', 32);
+    $table->string('icon_path', 320);
+});
+
+<?php
+Schema::create('user', function($table)
+{
+    $table->increments('id');
+    $table->string('name', 32)->unique();
+    $table->string('email', 256)->unique();
+    $table->string('password', 64);
+    $table->string('avatar_path', 320);
+    $table->timestamps();
+});
+
+
+
+DB::table('user')->insert(array(
+    'name' => 'admin',
+    'email' => '',
+    'password' => Hash::make('1234')
+));
+
+<?php
+Schema::create('character', function($table)
+{
+    $table->increments('id');
+    $table->integer('owner_id')->unsigned();
+    $table->integer('at_id')->unsigned();
+    $table->integer('level')->unsigned();
+    $table->string('name', 32)->unique();
+    $table->foreign('owner_id')->references('id')->on('user');
+    $table->foreign('at_id')->references('id')->on('archetype');
+    $table->string('icon_path', 320);
+    $table->timestamps();
+});
+
+<?php
+Schema::create('event_catalog', function($table)
+{
+    $table->create();
+    $table->increments('id');
+    $table->string('name', 32);
+    $table->string('info' 1024);
+    $table->integer('zone_id')->unsigned();
+    $table->integer('min_player')->unsigned();
+    $table->integer('max_player')->unsigned();
+    $table->string('icon_path', 320);
+    $table->foreign('zone_id')->references('id')->on('zone');
+});
+
+
+
+Schema::create('event', function($table)
+{
+    $table->increments('id');
+    $table->date('when');
+    $table->string('name', 32);
+    $table->string('info' 1024);
+    $table->integer('zone_id')->unsigned();
+    $table->integer('min_player')->unsigned();
+    $table->integer('max_player')->unsigned();
+    $table->string('icon_path', 320);
+    $table->integer('status')->unsigned(); // (0 = locked, 2 = open, 4 = full, 6 = over)
+    $table->timestamps();
+    $table->foreign('zone_id')->references('id')->on('zone');
+});
+
+<?php
+Schema::create('roster', function($table)
+{
+    $table->integer('event_id')->unsigned();
+    $table->integer('character_id')->unsigned();
+    $table->timestamp('added_on');
+    $table->foreign('event_id')->references('id')->on('event');
+    $table->foreign('character_id')->references('id')->on('character');
+});
+
+
+<?php
+Schema::create('comments', function($table)
+{
+    $table->increments('id');
+    $table->integer('author_id')->unsigned();
+    $table->timestamp('added_on');
+    $table->string('text', 1024);
+    $table->foreign('author_id')->references('id')->on('user');
+});
